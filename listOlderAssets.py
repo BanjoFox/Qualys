@@ -36,6 +36,17 @@ logger = logging.getLogger('logger')
 class QualysError(Exception):
 	pass
 
+def create_attributes_dict(host):
+	impt_attrs = {
+		host.ID: ("ID", "No ID!", False),
+		host.IP: ("IP", "No IP!", True),
+		host.DNS: ("DNS", "No DNS!", True),
+		host.OS: ("OS", "No OS!", False),
+		host.LAST_VULN_SCAN_DATETIME: ("Last day scanned", "No last day scanned!", True),
+		host.ASSET_GROUP_IDS: ("Asset group", "No Asset group!", False),
+	}
+	return impt_attrs
+
 def get_data(days):
 	try:
 		a = qualysapi.connect('config.ini')
@@ -55,27 +66,18 @@ def get_data(days):
 			output_list.append("*** Query Data ***")
 			output_list.append("IP, DNSHostname, LastScanDate")
 			for host in root.RESPONSE.HOST_LIST.HOST:
+				impt_attrs = create_attributes_dict(host)
 				inner_output_list = []
 				print("\n++++++++++++++++++++++++++++++++++++++++\n")
-				print(f"ID: {host.ID.text}")
-				print(f"IP: {host.IP.text}")
-				inner_output_list.append(f"{host.IP.text}")
-				try: 
-					print(f"DNS: {host.DNS.text}")
-					inner_output_list.append(f"{host.DNS.text}")
-				except AttributeError:
-					print("No DNS!")
-					inner_output_list.append(f"NO HOSTNAME")
-				try: 
-					print(f"OS: {host.OS.text}")
-				except AttributeError:
-					print("No OS!")
-				print(f"Last day scanned: {host.LAST_VULN_SCAN_DATETIME.text}")
-				inner_output_list.append(f"{host.LAST_VULN_SCAN_DATETIME.text}")
-				try: 
-					print(f"Asset group: {host.ASSET_GROUP_IDS.text}")
-				except AttributeError: 
-					print("No Asset group!")
+				for attr, (p_text, e_text, write_to_csv) in impt_attrs.items():
+					try:
+						print(f"{p_text}: {attr.text}")
+						if write_to_csv:
+							inner_output_list.append(attr.text)
+					except AttributeError:
+						print(f"{e_text}")
+						if write_to_csv:
+							inner_output_list.append(e_text)
 				print(f"\n++++++++++++++++++++++++++++++++++++++++\n")
 				inner_output = ",".join(inner_output_list)
 				output_list.append(inner_output)
