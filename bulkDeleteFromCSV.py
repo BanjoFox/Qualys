@@ -39,8 +39,7 @@ def delete_row(row_ip):
    # is wrapped in double quotes, your key name or whatever needs to be in
    # single quotes, or vice versa. Below is good!
    print(f"Submitting purge request for {row_ip}.")
-
-   # Do the actual deleting here.
+      
 
 # Separate out the row deletion into its own function. That way you don't 
 # HAVE to purge all the rows at once if you don't want to.
@@ -48,7 +47,21 @@ def delete_all_rows(reader):
    for row in reader:
       delete_row(row["IP"])
 
-#action(build_dict)
+
+#-
+# Qualys API call to purge the IP list
+#
+def purge_ip_list(reader):
+   ips_to_purge = ",".join([row["IP"] for row in reader])
+#	try:
+#		a = qualysapi.connect('config.ini')
+#		assets = a.request('/api/2.0/fo/asset/host/',{
+#         'action':'purge',
+#         'data_scope':'pc,vm',
+#			'ips':row_ip,
+#			},verify=False)  # Prevent 'Self-Signed Certificate in Chain' from blocking activity
+#	except AttributeError:
+#		print("error", "Can't find the data")
 
 
 def main():
@@ -73,22 +86,3 @@ def main():
 
 if __name__ == "__main__":
    main()
-
-#-
-# Connect with Qualys API, and submit Purge request into the queue
-#
-
-#def get_data(file):
-#	try:
-#		a = qualysapi.connect('config.ini')
-#		assets = a.request('/api/2.0/fo/asset/host/',{
-#         'action':'purge',
-#         'data_scope':'pc,vm',
-#			'ips':csv_in,
-#			},verify=False)  # Prevent 'Self-Signed Certificate in Chain' from blocking activity
-#	except AttributeError:
-#		print("error", "Can't find the data")
-      
-      
-      
-      
