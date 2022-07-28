@@ -37,13 +37,20 @@ class QualysError(Exception):
 	pass
 
 def create_attributes_dict(host):
+	"""Create and return a dictionary of important attributes and values associated
+	with them. The key of each dictionary entry is the attribute; the value is
+	a tuple composed of:
+	* identifier text for the attribute, meant to be printed to output before its value;
+	* error text for the attribute, meant to be printed to output if the attribute isn't present;
+	* a boolean determining whether to write the attribute to the CSV.
+	"""
 	impt_attrs = {
-		host.ID: ("ID", "No ID!", False),
-		host.IP: ("IP", "No IP!", True),
-		host.DNS: ("DNS", "No DNS!", True),
-		host.OS: ("OS", "No OS!", False),
-		host.LAST_VULN_SCAN_DATETIME: ("Last day scanned", "No last day scanned!", True),
-		host.ASSET_GROUP_IDS: ("Asset group", "No Asset group!", False),
+		host.get("ID", None): ("ID", "No ID!", False),
+		host.get("IP", None): ("IP", "No IP!", True),
+		host.get("DNS", None): ("DNS", "No DNS!", True),
+		host.get("OS", None): ("OS", "No OS!", False),
+		host.get("LAST_VULN_SCAN_DATETIME", None): ("Last day scanned", "No last day scanned!", True),
+		host.get("ASSET_GROUP_IDS", None): ("Asset group", "No Asset group!", False),
 	}
 	return impt_attrs
 
