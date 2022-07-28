@@ -69,6 +69,17 @@ def get_data(days):
 				impt_attrs = create_attributes_dict(host)
 				inner_output_list = []
 				print("\n++++++++++++++++++++++++++++++++++++++++\n")
+				# woo tuple destructuring!
+				# The dictionary has host.WHATEVER as keys, and then as values,
+				# a tuple of (print_text, error_text, write_to_csv). Python
+				# allows us to destructure that tuple into individual variables
+				# in place, with the parentheses and commas. In fact, that's what
+				# we're doing with the return from impt_attrs.items() - it
+				# returns a tuple, which we're destructuring into attr and the
+				# inner tuple that we need to destructure separately.
+				# (Why are we doing this at all? Don't Repeat Yourself. We 
+				# don't need all that repeated print() / if AttributeError / etc.
+				# code when a simple loop will do.)
 				for attr, (p_text, e_text, write_to_csv) in impt_attrs.items():
 					try:
 						print(f"{p_text}: {attr.text}")
