@@ -1,3 +1,26 @@
+#-
+# Source URL: https://github.com/SBB-Mx/Qualys
+#
+
+#-
+# "Fix" for Self-signed certificates in chain.
+# Does this actually work?  Should we just remove it?
+#
+import ssl
+
+try:
+	_create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+# Legacy Python that doesn't verify HTTPS certificates by default
+	pass
+else:
+# Handle target environment that doesn't support HTTPS verification
+	ssl._create_default_https_context = _create_unverified_https_context
+
+#-
+# Original Script
+#
+
 import qualysapi 
 import sys, datetime 
 from lxml import objectify
@@ -7,25 +30,35 @@ import logging
 logging.basicConfig()
 logger = logging.getLogger('logger')
 		
-def titulo():
-	print ("******************************************************")
-	print ("		 				  ")
-	print ("		Vulnerabilty Management Team				  ")
-	print ("		 				  ")
-	print ("******************************************************")		
-def purge(days):
+def title():
+	#print ("******************************************************")
+	#print ("		 				  ")
+	#print ("		Vulnerability Management Team				  ")
+	#print ("		 				  ")
+	#print ("******************************************************")
+	print ("*** Query Data ***")
+def get_data(days):
 	try:
 		a = qualysapi.connect('config.ini')
-		assets = a.request('/api/2.0/fo/asset/host/',{'action':'list','details':'All/AGs','no_vm_scan_since':days})
-		#print(assets)
+		assets = a.request('/api/2.0/fo/asset/host/',{
+			'action':'list',
+			'details':'All/AGs',
+			'no_vm_scan_since':days,
+			'use_tags':'1',
+			'tag_set_by':'name',
+			'tag_include_selector':'any',
+			'tag_set_include':'PRODOPS',
+			},verify=False)  # Prevent 'Self-Signed Certificate in Chain' from blocking activity
+		
 		root = objectify.fromstring(assets.encode('utf-8'))
 		file = open("ips.csv","w+")
-		file.write ("******************************************************"+'\n')
-		file.write ("		 				  "+'\n')
-		file.write ("		Vulnerabilty Management Team				  "+'\n')
-		file.write ("		 				  "+'\n')
-		file.write ("******************************************************"'\n')
-		file.write("IP , NETBIOS ,Last vuln scan"'\n')
+		#file.write ("******************************************************"+'\n')
+		#file.write ("		 				  "+'\n')
+		#file.write ("		Vulnerability Management Team				  "+'\n')
+		#file.write ("		 				  "+'\n')
+		#file.write ("******************************************************"'\n')
+		file.write ("*** Query Data ***"'\n')
+		file.write("IP , DNSHostname ,LastScanDate"'\n')
 		for host in root.RESPONSE.HOST_LIST.HOST:
 			#ipList = (host.DNS.text+host.IP.text+","+host.LAST_VULN_SCAN_DATETIME.text+'\n')
 			print ('\n'"++++++++++++++++++++++++++++++++++++++++"'\n')
@@ -50,8 +83,8 @@ def purge(days):
 			print ('\n'"++++++++++++++++++++++++++++++++++++++++"'\n')
 		file.close()
 	except AttributeError:
-		print("error", "I don't find data for host not scanned sice "+ days)	
-titulo()
+		print("error", "I don't find data for host not scanned since "+ days)	
+title()
 day = (datetime.today()  - timedelta(days=int(sys.argv[1])) ).strftime('%Y-%m-%d')
-print("Host not scanned sice : "+day)
-purge(day)
+print("Host not scanned since : "+day)
+get_data(day)
