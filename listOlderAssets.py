@@ -47,7 +47,7 @@ def get_data(days):
 			'use_tags':'1',
 			'tag_set_by':'name',
 			'tag_include_selector':'any',
-			'tag_set_include':'PRODOPS',
+			'tag_set_include':'[Any_Tag_here]',
 			},verify=False)  # Prevent 'Self-Signed Certificate in Chain' from blocking activity
 		
 		root = objectify.fromstring(assets.encode('utf-8'))
