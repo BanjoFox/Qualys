@@ -92,7 +92,7 @@ def get_data(days):
 # below. Now it only runs if you call the main() function...
 def main():
 	parser = argparse.ArgumentParser()
-	parser.add_argument("days", help="The number of days back to scan")
+	parser.add_argument("days", type=int, help="The number of days back to scan")
 	args = parser.parse_args()
 
 	print ("*** Query Data ***")
