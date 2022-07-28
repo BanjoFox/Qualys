@@ -1,3 +1,4 @@
+# encoding: utf-8
 #-
 # Source URL: https://github.com/SBB-Mx/Qualys
 #
@@ -19,24 +20,22 @@ else:
 
 #-
 # Original Script
+# Edited by Noëlle Anthony 7/28/2022
 #
 
-import qualysapi 
-import sys, datetime 
-from lxml import objectify
-from datetime import datetime
-from datetime import timedelta
+import argparse, sys
+from datetime import datetime, timedelta
 import logging
+
+from lxml import objectify
+import qualysapi 
+
 logging.basicConfig()
 logger = logging.getLogger('logger')
-		
-def title():
-	#print ("******************************************************")
-	#print ("		 				  ")
-	#print ("		Vulnerability Management Team				  ")
-	#print ("		 				  ")
-	#print ("******************************************************")
-	print ("*** Query Data ***")
+
+class QualysError(Exception):
+	pass
+
 def get_data(days):
 	try:
 		a = qualysapi.connect('config.ini')
@@ -51,40 +50,59 @@ def get_data(days):
 			},verify=False)  # Prevent 'Self-Signed Certificate in Chain' from blocking activity
 		
 		root = objectify.fromstring(assets.encode('utf-8'))
-		file = open("ips.csv","w+")
-		#file.write ("******************************************************"+'\n')
-		#file.write ("		 				  "+'\n')
-		#file.write ("		Vulnerability Management Team				  "+'\n')
-		#file.write ("		 				  "+'\n')
-		#file.write ("******************************************************"'\n')
-		file.write ("*** Query Data ***"'\n')
-		file.write("IP , DNSHostname ,LastScanDate"'\n')
-		for host in root.RESPONSE.HOST_LIST.HOST:
-			#ipList = (host.DNS.text+host.IP.text+","+host.LAST_VULN_SCAN_DATETIME.text+'\n')
-			print ('\n'"++++++++++++++++++++++++++++++++++++++++"'\n')
-			print ("ID: "+host.ID.text)
-			print ("IP: "+host.IP.text)
-			file.write(host.IP.text+",")
-			try: 
-				print ("DNS: "+host.DNS.text)
-				file.write(host.DNS.text+",")
-			except AttributeError:
-				print ("NO DNS ")
-				file.write("NO HOSTNAME"+",")
-			try: print ("OS: "+host.OS.text)
-			except AttributeError:
-				print ("No OS")
-			print ("Last day scanned: "+host.LAST_VULN_SCAN_DATETIME.text)
-			file.write(host.LAST_VULN_SCAN_DATETIME.text+'\n')
-			try: 
-				print ("Asset group: "+host.ASSET_GROUP_IDS.text)
-			except AttributeError: 
-				print ("No Asset group")
-			print ('\n'"++++++++++++++++++++++++++++++++++++++++"'\n')
-		file.close()
+		with open("ips.csv","w+") as ips_file:
+			output_list = []
+			output_list.append("*** Query Data ***")
+			output_list.append("IP , DNSHostname ,LastScanDate")
+			for host in root.RESPONSE.HOST_LIST.HOST:
+				inner_output_list = []
+				print("\n++++++++++++++++++++++++++++++++++++++++\n")
+				print(f"ID: {host.ID.text}")
+				print(f"IP: {host.IP.text}")
+				inner_output_list.append(f"{host.IP.text},")
+				try: 
+					print(f"DNS: {host.DNS.text}")
+					inner_output_list.append(f"{host.DNS.text},")
+				except AttributeError:
+					print("No DNS!")
+					inner_output_list.append(f"NO HOSTNAME ,")
+				try: 
+					print(f"OS: {host.OS.text}")
+				except AttributeError:
+					print("No OS!")
+				print(f"Last day scanned: {host.LAST_VULN_SCAN_DATETIME.text}")
+				inner_output_list.append(f"{host.LAST_VULN_SCAN_DATETIME.text}")
+				try: 
+					print(f"Asset group: {host.ASSET_GROUP_IDS.text}")
+				except AttributeError: 
+					print("No Asset group!")
+				print(f"\n++++++++++++++++++++++++++++++++++++++++\n")
+				inner_output = "\n".join(inner_output_list)
+				output_list.append(inner_output)
+			output = "\n".join(output_list)
+			file.write(output)
+			
 	except AttributeError:
-		print("error", "I don't find data for host not scanned since "+ days)	
-title()
-day = (datetime.today()  - timedelta(days=int(sys.argv[1])) ).strftime('%Y-%m-%d')
-print("Host not scanned since : "+day)
-get_data(day)
+		raise QualysError(f"I can't find any data for hosts not scanned since {days}.")	
+
+
+# WHAT DOES THIS DO?
+# Moving the main logic of the file into a function lets you import it into
+# other Python scripts without automatically running all of this script's logic
+# below. Now it only runs if you call the main() function...
+def main():
+	parser = argparse.ArgumentParser()
+	parser.add_argument("days", type=int, help="The number of days back to scan")
+	args = parser.parse_args()
+
+	print ("*** Query Data ***")
+
+	day = (datetime.today()  - timedelta(days=args.days)).strftime('%Y-%m-%d')
+	print(f"Scanning back to: {day}")
+	get_data(day)
+
+# ...and this calls the main() function if you're running it from the command
+# line (or by double-clicking it, if you're on some weird not-Linux system).
+# It only runs if this is the primary (__main__) script running.
+if __name__ == "__main__":
+	main()
