@@ -53,19 +53,19 @@ def get_data(days):
 		with open("ips.csv","w+") as ips_file:
 			output_list = []
 			output_list.append("*** Query Data ***")
-			output_list.append("IP , DNSHostname ,LastScanDate")
+			output_list.append("IP, DNSHostname, LastScanDate")
 			for host in root.RESPONSE.HOST_LIST.HOST:
 				inner_output_list = []
 				print("\n++++++++++++++++++++++++++++++++++++++++\n")
 				print(f"ID: {host.ID.text}")
 				print(f"IP: {host.IP.text}")
-				inner_output_list.append(f"{host.IP.text},")
+				inner_output_list.append(f"{host.IP.text}")
 				try: 
 					print(f"DNS: {host.DNS.text}")
-					inner_output_list.append(f"{host.DNS.text},")
+					inner_output_list.append(f"{host.DNS.text}")
 				except AttributeError:
 					print("No DNS!")
-					inner_output_list.append(f"NO HOSTNAME ,")
+					inner_output_list.append(f"NO HOSTNAME")
 				try: 
 					print(f"OS: {host.OS.text}")
 				except AttributeError:
@@ -77,7 +77,7 @@ def get_data(days):
 				except AttributeError: 
 					print("No Asset group!")
 				print(f"\n++++++++++++++++++++++++++++++++++++++++\n")
-				inner_output = "\n".join(inner_output_list)
+				inner_output = ",".join(inner_output_list)
 				output_list.append(inner_output)
 			output = "\n".join(output_list)
 			file.write(output)
