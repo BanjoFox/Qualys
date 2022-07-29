@@ -13,7 +13,7 @@ import qualysapi
 #-
 # Initialize variables
 #
-DATA_FILE = "bulk_test.csv"
+DATA_FILE = "livetest.csv"
 
 #-
 # Build dictionary, then convert that into a comma-separated list that is usable by the API
@@ -31,21 +31,22 @@ def parse_csv():
 purge_list = parse_csv()
 
 # Debugging statement
-print("Returned list",purge_list)
+#print("Returned list",purge_list)
 
 def purge_asset_data():
-#   purge_list = parse_csv()
-  
+
    #Debug/testing ONLY
-   print("List to be purged:",purge_list)
-#	try:
-#     a = qualysapi.connect('config.ini')
-#		assets = a.request('/api/2.0/fo/asset/host/',{
-#         'action':'purge',
-#         'data_scope':'pc,vm',
-#			'ips':purge_list,
-#			},verify=False)  # Prevent 'Self-Signed Certificate in Chain' from blocking activity
-#	except AttributeError:
-#		print("error", "Can't find the data")
+   print("List to be purged:",purge_list,"\n")
+   input("Continue? [y/N]")
+   
+   try:
+     a = qualysapi.connect('config.ini')
+     assets = a.request('/api/2.0/fo/asset/host/',{
+         'action':'purge',
+         'data_scope':'pc,vm',
+         'ips':purge_list,
+         },verify=False)  # Prevent 'Self-Signed Certificate in Chain' from blocking activity
+   except AttributeError:
+      print("error", "Can't find the data")
 
 purge_asset_data()
