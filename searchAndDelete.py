@@ -1,5 +1,7 @@
+# encoding: utf-8
 #-
-# Source URL: https://github.com/SBB-Mx/Qualys
+# Search and delete Assets individually
+# Original Source: https://github.com/SBB-Mx/Qualys
 #
 
 import qualysapi 
