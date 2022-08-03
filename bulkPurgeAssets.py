@@ -5,15 +5,18 @@
 # Created by P. Alexander 7/28/2022 
 #
 
-import csv
+import csv, sys
 from lxml import objectify
-
+from datetime import date
 import qualysapi 
 
 #-
 # Initialize variables
 #
-DATA_FILE = "livetest.csv"
+getday = date.today()
+today = getday.strftime('%Y-%m-%d')
+tags = str(sys.argv[1])
+DATA_FILE = "asset-list-" + tags + "-" + today +".csv"
 
 #-
 # Build dictionary, then convert that into a comma-separated list that is usable by the API
@@ -21,8 +24,7 @@ DATA_FILE = "livetest.csv"
 def parse_csv():
    with open(DATA_FILE, newline='') as csvfile:
       ip_dict = csv.DictReader(csvfile)
-      build_list = ",".join([row["IP"] for row in ip_dict])
-      print("List Built. Exporting data.")
+      build_list = ",".join([row["Host ID"] for row in ip_dict])
    return build_list
 
 #- 
@@ -33,22 +35,75 @@ purge_list = parse_csv()
 # Debugging statement
 #print("Returned list",purge_list)
 
+#-
+# Shamelessly stolen from ActiveState
+# Source: https://code.activestate.com/recipes/541096-prompt-the-user-for-confirmation/
+def confirm(prompt=None, resp=False):
+    """prompts for yes or no response from the user. Returns True for yes and
+    False for no.
+
+    'resp' should be set to the default value assumed by the caller when
+    user simply types ENTER.
+
+    >>> confirm(prompt='Create Directory?', resp=True)
+    Create Directory? [y]|n: 
+    True
+    >>> confirm(prompt='Create Directory?', resp=False)
+    Create Directory? [n]|y: 
+    False
+    >>> confirm(prompt='Create Directory?', resp=False)
+    Create Directory? [n]|y: y
+    True
+
+    """
+    
+    if prompt is None:
+        prompt = 'Confirm'
+
+    if resp:
+        prompt = '%s [%s]|%s: ' % (prompt, 'y', 'n')
+    else:
+        prompt = '%s [%s]|%s: ' % (prompt, 'n', 'y')
+        
+    while True:
+        ans = input(prompt)
+        if not ans:
+            return resp
+        if ans not in ['y', 'Y', 'n', 'N']:
+         print('please enter y or n.')
+         continue
+        if ans == 'y' or ans == 'Y':
+            return True
+        if ans == 'n' or ans == 'N':
+            return False
+
+#-
+# Call the API, and submit data
+#
 def purge_asset_data():
 
    #Debug/testing ONLY
    print("List to be purged:",purge_list,"\n")
-   input("Continue? [y/N]")
+   
+   #-
+   # This doesn't ACTUALLY stop the input, but that's a problem for FUTURE developer :D
+   #
+   confirm()
    
    try:
      a = qualysapi.connect('config.ini')
      assets = a.request('/api/2.0/fo/asset/host/',{
          'action':'purge',
          'data_scope':'pc,vm',
-         'ips':purge_list,
+         'ids':purge_list,
          },verify=False)  # Prevent 'Self-Signed Certificate in Chain' from blocking activity
-     print(assets)
+    # print(assets) # Print COMPLETE XML response from Qualys API
      
    except AttributeError:
       print("error", "Can't find the data")
 
+
+#-
+# Do the thing!
+#
 purge_asset_data()
