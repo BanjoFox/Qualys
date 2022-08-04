@@ -20,22 +20,30 @@ DATA_FILE = "ticket_list.csv"
 #
 def parse_csv():
    with open(DATA_FILE, newline='',) as csvfile:
-      ticket_list = csv.reader(csvfile)
+      ticket_list = csv.DictReader(csvfile)
       for row in ticket_list:
-         qid = int(row['QID'])
+         qid = row['QID']
          ticket = row['Ticket']
-      build_list = qid + ',' + ticket
+         build_list = qid + ' ' + comment + ticket
       print('List Built. Exporting data.')
+#      callAPI()
    return build_list
 
 #- 
 # Assign the list -DATA- to a variable for later use
 #
-purge_list = parse_csv()
+ticket_list = parse_csv()
 
 # Debugging statement
-print("Returned list",purge_list)
+print("Returned list",ticket_list)
 
 #-
 # API Call
-#/api/2.0/fo/knowledge_base/vuln/ --> action=edit&solution_comment="Jira ticket: [ticket]&qid=[qid]"
+#
+def callAPI():
+      a = qualysapi.connect('config.ini')
+      assets = a.request('/api/2.0/fo/asset/host/',{
+         'action':'edit',
+         'qid':qid,
+         'solution_comment':'Jira Ticket: ' + ticket,
+      },verify=False)  # Prevent 'Self-Signed Certificate in Chain' from blocking activity
