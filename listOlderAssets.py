@@ -15,19 +15,14 @@ logging.basicConfig()
 logger = logging.getLogger('logger')
 
 #-
-# Initiialize Variiables
+# Initialize Variables
 #
 day = (datetime.today()  - timedelta(days=int(sys.argv[1])) ).strftime('%Y-%m-%d')
 getday = date.today()
 today = getday.strftime('%Y-%m-%d')
 tags = str(sys.argv[2])
 
-#def titulo():
-#	print ("******************************************************")
-#	print ("		 				  ")
-#	print ("		Vulnerabilty Management Team				  ")
-#	print ("		 				  ")
-#	print ("******************************************************")		
+
 def purge(days,tags,today):
 	try:
 		a = qualysapi.connect('config.ini')
@@ -43,41 +38,49 @@ def purge(days,tags,today):
 		#print(assets)
 		root = objectify.fromstring(assets.encode('utf-8'))
 		file = open("asset-list-" + tags + "-" + today +".csv","w+")
-		file.write("Host ID,IP,DNS Name,OS,Last vuln scan"'\n')
+		file.write("Host ID,IP,DNS Name,OS,Tracking,Last vuln scan"'\n')
 		for host in root.RESPONSE.HOST_LIST.HOST:
-			print ('\n'"++++++++++++++++++++++++++++++++++++++++"'\n')
+			#print ('\n'"++++++++++++++++++++++++++++++++++++++++"'\n')
 			try: 
-				print ("Host ID: "+host.ID.text)
+				#print ("Host ID: "+host.ID.text)
 				file.write(host.ID.text+",")
 			except AttributeError:
 				print ("NO HOST ID ")
 				file.write("NO HOST ID"+",")
 			try: 
-				print ("IP: "+host.IP.text)
+				#print ("IP: "+host.IP.text)
 				file.write(host.IP.text+",")
 			except AttributeError:
-				print ("NO IP ")
+				#print ("NO IP ")
 				file.write("NO IP"+",")
 			try: 
-				print ("DNS: "+host.DNS.text)
+				#print ("DNS: "+host.DNS.text)
 				file.write(host.DNS.text+",")
 			except AttributeError:
-				print ("NO DNS ")
-				file.write("NO DNS"+",")          
+				#print ("NO DNS ")
+				file.write("NO DNS"+",")
 			try:
-				print ("OS: "+host.OS.text)
+				#print ("OS: "+host.OS.text)
 				file.write(host.OS.text+",")
 			except AttributeError:
 				print ("No OS")
-				file.write("NO OS"+",")
+				file.write("No OS"+",")				
+			try:
+				#print ("Tracking: "+host.TRACKING_METHOD.text)
+				file.write(host.TRACKING_METHOD.text+",")
+			except AttributeError:
+				#print ("No TRACKING_METHOD")
+				file.write("NO TRACKING_METHOD"+",")
 				
-			print ("Last day scanned: "+host.LAST_VULN_SCAN_DATETIME.text)
+			#print ("Last scanned: "+host.LAST_VULN_SCAN_DATETIME.text)
 			file.write(host.LAST_VULN_SCAN_DATETIME.text+'\n')
-			print ('\n'"++++++++++++++++++++++++++++++++++++++++"'\n')
+			#print ('\n'"++++++++++++++++++++++++++++++++++++++++"'\n')
 		file.close()
 	except AttributeError:
 		print("error", "I don't find data for host not scanned since "+ days)	
-#titulo()
 
+#-
+# Do the thing
+#
 purge(day,tags,today)
 
