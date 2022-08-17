@@ -14,8 +14,7 @@ from lxml import objectify
 #-
 # Initialize variables
 #
-#qualys_password = os.environ['qualys_password']
-DATA_FILE = "ticket_list.csv"
+DATA_FILE = "ticket_test.csv"
 getday = date.today()
 today = getday.strftime('%Y-%m-%d')
 
@@ -41,14 +40,14 @@ def parseCSV():
             kb_call = callAPI(qid,ticket)
             
             # Objectify the XML to log responses --> https://lxml.de/objectify.html   
-            xml_root = objectify.fromstring(kb_call.encode('utf-8'))
-            
+            xml_root = objectify.fromstring(kb_call.encode('utf-8'))          
+           
             # Log the KB update
-            file.write(qid+","+ticket+","+xml_root.RESPONSE.TEXT.text+","+"\n")
+            file.write(qid+","+ticket+","+today+","+xml_root.RESPONSE.TEXT.text+","+"\n")
             #file.write(qid+","+ticket+","+today+", Custom Vuln Data has been updated successfully"+"\n")
             
          except:
-            file.write(qid+","+ticket+","+xml_root.RESPONSE.TEXT.text+"\n")
+            file.write(qid+","+ticket+","+today+xml_root.RESPONSE.TEXT.text+"\n")
             #file.write(qid+","+ticket+","+today+", ERROR"+"\n")
             #print("There was an issue")
             print(xml_root.RESPONSE.TEXT.text)
@@ -60,7 +59,6 @@ def parseCSV():
 #
 def callAPI(qid,ticket):
    a = qualysapi.connect('config.ini')
-#   serve(app, host='0.0.0.0', port=8000, threads=50)
    kb_call = a.request('/api/2.0/fo/knowledge_base/vuln/',{
          'action':'edit',
          'qid':qid,
