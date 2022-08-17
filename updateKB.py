@@ -1,12 +1,10 @@
 
 # encoding:utf-8
-# **Owned by Squaretrade Security Operations team**
-# https://github.squaretrade.com/secops/qualys_api_scripts
-#
+#-
 # Pull in csv file of tickets and make API calls to backend 
 # KnowledgeBase API for updating solution comments
 #
-# Created by P. Alexander 7/28/2022 
+# Created by B. Fox 7/28/2022 
 #
 
 import csv, os, qualysapi
