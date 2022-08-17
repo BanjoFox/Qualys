@@ -1,56 +1,58 @@
 
 # encoding:utf-8
-# **Owned by Squaretrade Security Operations team**
-# https://github.squaretrade.com/secops/qualys_api_scripts
-#
-# Pull in csv file of tickets and make API calls to backend 
+#-
+# Pull in csv file of tickets and make API calls to back-end 
 # KnowledgeBase API for updating solution comments
 #
-# Created by P. Alexander 7/28/2022 
+# Created by B. Fox 7/28/2022 
 #
 
 import csv, os, qualysapi
 from datetime import datetime, date
 from lxml import objectify
-#from pyramid.paster import get_app
-#from waitress import serve
 
 #-
 # Initialize variables
 #
 #qualys_password = os.environ['qualys_password']
-DATA_FILE = "ticket_test.csv"
+DATA_FILE = "ticket_list.csv"
 getday = date.today()
 today = getday.strftime('%Y-%m-%d')
 
 def main():
 
-   worker = parse_csv(kb_call)
+   worker = parseCSV()
    
 #-
 # Build dictionary, then convert that into a comma-separated list that is usable by the API
 #
-def parse_csv(kb_call):
+def parseCSV():
    
    # Build log file
    file = open("processed_qids-" + today +".csv","w+")
-   file.write("QID,Ticket,Date Modified"'\n')
-      
-   root = objectify.fromstring(kb_call.encode('utf-8'))
-   
+   file.write("QID,Ticket,Date Modified,Comment"'\n')
+    
    with open(DATA_FILE, 'r') as csvfile:
       ticket_list = csv.DictReader(csvfile)
       for row in ticket_list:
          try:
             qid = row['QID']
             ticket = row['Ticket']
-            callAPI(qid,ticket)
+            kb_call = callAPI(qid,ticket)
+            
+            # Objectify the XML to log responses --> https://lxml.de/objectify.html   
+            xml_root = objectify.fromstring(kb_call.encode('utf-8'))
+            
             # Log the KB update
-            file.write(qid+","+ticket+","+root.RESPONSE.TEXT.text+","+today+"\n")
+            file.write(qid+","+ticket+","+xml_root.RESPONSE.TEXT.text+","+"\n")
+            #file.write(qid+","+ticket+","+today+", Custom Vuln Data has been updated successfully"+"\n")
             
          except:
-            #print("ERROR: "+qid+" Is invalid")
-            file.write(qid+","+ticket+","+root.RESPONSE.TEXT.text+"\n")
+            file.write(qid+","+ticket+","+xml_root.RESPONSE.TEXT.text+"\n")
+            #file.write(qid+","+ticket+","+today+", ERROR"+"\n")
+            #print("There was an issue")
+            print(xml_root.RESPONSE.TEXT.text)
+          
    file.close()
 
 #-
@@ -66,7 +68,7 @@ def callAPI(qid,ticket):
       },verify=False)  # Prevent 'Self-Signed Certificate in Chain' from blocking activity
    
    # Print Full API response
-   #print(kb_call)
+   #print(kb_call) - DEBUGGING?
    return kb_call
 #-
 # Run the code
