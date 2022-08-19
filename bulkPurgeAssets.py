@@ -24,11 +24,15 @@ DATA_FILE = "asset-list-" + tags + "-" + today +".csv"
 #
 def parse_csv():
    with open(DATA_FILE, newline='') as csvfile:
-      agent_dict = csv.DictReader(csvfile)
-      if row['Tracking'] == str('Cloud Agent'):
-         build_list = ','.join([row['Host ID'] for row in ip_dict])
+      asset_dict = csv.DictReader(csvfile)
+      agent_list, ip_list = [], []
+      for row in asset_dict:
+         if row['Tracking'] == str('Cloud Agent'):
+            agent_list.append(row['Host ID'])
+         else:   
+            ip_list.append(row['Host ID'])
             
-   return build_list
+   return agent_list,ip_list
 
 #- 
 # Assign the list -DATA- to a variable for later use
